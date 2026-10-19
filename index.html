@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, user-scalable=yes" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Line Contingency" />
+  <title>PhilGrid Line & Contingency Analyzer — Mobile 1-Screen</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="mobile-app-shell">
+    
+    <!-- APP HEADER -->
+    <header class="app-header">
+      <div class="header-top-row">
+        <div class="app-brand">
+          <span class="app-brand-icon">⚡</span>
+          <div>
+            <h1 class="app-title">PhilGrid N-1 Analyzer</h1>
+            <div class="app-subtitle">N-1 Contingency & DOE GOMP • Franz Xyrlo Tobias, PEE</div>
+          </div>
+        </div>
+        <div class="header-actions-group">
+          <button id="btn-gomp-toggle" class="btn btn-gomp-pill" title="View DOE GOMP Maintenance Calendar">
+            🛠️ GOMP <span id="gomp-badge-count" class="gomp-count-pill">5</span>
+          </button>
+          <button id="btn-theme-toggle" class="btn btn-icon-compact" title="Toggle Light / Dark Mode">🌓</button>
+          <button id="btn-reset-all" class="btn btn-reset-compact" title="Reset all breakers to normal">↺ RESET</button>
+        </div>
+      </div>
+
+      <!-- REGIONAL GRID SWITCHER (Touch-Scrollable Pill Bar) -->
+      <div class="region-nav-bar">
+        <button class="btn-region-tab active-region" data-region="all">🌐 All Grids</button>
+        <button class="btn-region-tab" data-region="luzon">⚡ Luzon</button>
+        <button class="btn-region-tab" data-region="visayas">⚡ Visayas</button>
+        <button class="btn-region-tab" data-region="mindanao">⚡ Mindanao</button>
+        <button class="btn-region-tab" data-region="offgrid">🏝️ Off-Grid / SPUG</button>
+      </div>
+    </header>
+
+    <!-- FLOATING TOAST NOTIFICATION -->
+    <div id="toast-notification" class="toast-notification" style="display: none;"></div>
+
+    <!-- DOE GOMP APPROACHING MAINTENANCE PROMPT BANNER -->
+    <div id="gomp-approaching-banner" class="gomp-alert-banner">
+      <div class="gomp-alert-left">
+        <span class="gomp-alert-icon">🛠️</span>
+        <div class="gomp-alert-text">
+          <span class="gomp-alert-headline">DOE GOMP Maintenance Approaching</span>
+          <span id="gomp-approaching-summary" class="gomp-alert-sub">5 Plants & Lines Scheduled in Next 14 Days</span>
+        </div>
+      </div>
+      <button id="btn-open-gomp" class="btn-gomp-open">📅 Calendar</button>
+    </div>
+
+    <!-- ACTIVE OUTAGES FLOATING BANNER (Appears when >= 1 line is tripped) -->
+    <div id="active-outage-banner" class="active-outage-banner" style="display: none;">
+      <div class="banner-left">
+        <span class="pulse-dot"></span>
+        <span id="active-outage-banner-text" class="banner-text">1 Line Tripped</span>
+      </div>
+      <div class="banner-actions">
+        <button id="btn-banner-copy" class="btn-banner-sub" title="Copy Viber/Telegram Dispatch Report">📋 Copy</button>
+        <button id="btn-banner-share" class="btn-banner-sub" title="Share Scenario Link">🔗 Link</button>
+        <button id="btn-banner-restore" class="btn-banner-restore">↺ Reclose</button>
+      </div>
+    </div>
+
+    <!-- MAIN 1-SCREEN CONTENT CONTAINER -->
+    <main class="app-main-content">
+      
+      <!-- HERO TELEMETRY READOUT CARD (White Theme - Frequency Removed) -->
+      <div class="card telemetry-hero-card">
+        <div class="telemetry-main-row">
+          <div>
+            <span class="telemetry-label">SYSTEM CONTINGENCY STATE</span>
+            <div id="grid-status-badge" class="badge badge-green hero-status-badge">● ALL LINES NORMAL</div>
+          </div>
+          <div class="status-pill-group">
+            <span id="metric-tripped-count" class="badge badge-gray">0 Tripped</span>
+            <span id="metric-ert-display" class="badge badge-blue">ERT: Normal</span>
+          </div>
+        </div>
+
+        <!-- Compact 3-Metric Ribbon -->
+        <div class="telemetry-ribbon">
+          <div class="ribbon-item">
+            <span class="ribbon-lbl">Curtailed Gen</span>
+            <span id="metric-curtailed-mw" class="ribbon-val text-red">0 MW</span>
+          </div>
+          <div class="ribbon-item">
+            <span class="ribbon-lbl">DU Load Shed</span>
+            <span id="metric-load-shed-mw" class="ribbon-val text-amber">0 MW</span>
+          </div>
+          <div class="ribbon-item">
+            <span class="ribbon-lbl">Economic Loss</span>
+            <span id="metric-econ-loss" class="ribbon-val text-slate">₱0.00M/hr</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNIVERSAL SEARCH WITH AUTO-FILL DROPDOWN -->
+      <div class="card search-console-card">
+        <div class="search-input-wrap-outer" style="position: relative;">
+          <div class="search-input-wrap">
+            <span class="search-icon-inside">🔍</span>
+            <input 
+              id="grid-search-input" 
+              type="text" 
+              class="search-omnibox" 
+              placeholder="Search DU, plant, province, sub, or line (e.g. Meralco, Dinginin, Hermosa)..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button id="btn-clear-search" class="btn-clear-search" title="Clear Search" style="display: none;">✕</button>
+            <button id="btn-exec-search" class="btn-search-go">Search</button>
+          </div>
+
+          <!-- AUTO-FILL DROPDOWN (DUs, Power Plants, Provinces, Regions, Lines, Substations) -->
+          <div id="search-autocomplete-dropdown" class="autocomplete-dropdown" style="display: none;">
+            <!-- Dynamically populated in app.js -->
+          </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-chips-row">
+          <button class="chip-btn active-chip" data-filter="all">All</button>
+          <button class="chip-btn" data-filter="lines">⚡ Lines</button>
+          <button class="chip-btn" data-filter="plants">🏭 Plants</button>
+          <button class="chip-btn" data-filter="dus">🏢 DUs</button>
+          <button class="chip-btn" data-filter="subs">⚡ Subs</button>
+          <button class="chip-btn" data-filter="gomp">🛠️ GOMP</button>
+          <button class="chip-btn" data-filter="spug">🏝️ SPUG</button>
+        </div>
+
+        <!-- MULTI-DIMENSIONAL FILTERS (Sizes, On/Off-Grid, Provinces, Regions) -->
+        <div class="filter-controls-grid">
+          <div class="filter-select-wrap">
+            <span class="filter-micro-label">🌐 Grid System</span>
+            <select id="filter-grid-type" class="filter-select-input">
+              <option value="all">All Grids (On & Off)</option>
+              <option value="ongrid">🔌 On-Grid (Main Grid)</option>
+              <option value="offgrid">🏝️ Off-Grid (SPUG Islands)</option>
+            </select>
+          </div>
+
+          <div class="filter-select-wrap">
+            <span class="filter-micro-label">🗺️ Region</span>
+            <select id="filter-region-select" class="filter-select-input">
+              <option value="all">All Regions</option>
+              <option value="luzon">Luzon</option>
+              <option value="visayas">Visayas</option>
+              <option value="mindanao">Mindanao</option>
+              <option value="offgrid">Off-Grid / SPUG</option>
+            </select>
+          </div>
+
+          <div class="filter-select-wrap">
+            <span class="filter-micro-label">🏛️ Province</span>
+            <select id="filter-province-select" class="filter-select-input">
+              <option value="all">All Provinces</option>
+              <!-- Dynamically populated in app.js with counts (e.g. Cagayan (2 DUs)) -->
+            </select>
+          </div>
+
+          <div class="filter-select-wrap">
+            <span class="filter-micro-label">⚡ Line Voltage</span>
+            <select id="filter-line-voltage" class="filter-select-input">
+              <option value="all">All Voltages</option>
+              <option value="500">500 kV EHV</option>
+              <option value="230">230 kV Bulk</option>
+              <option value="138">138 kV Sub-trans</option>
+              <option value="hvdc">350/450 kV HVDC</option>
+              <option value="69">69 kV / 13.8 kV</option>
+            </select>
+          </div>
+
+          <div class="filter-select-wrap">
+            <span class="filter-micro-label">🏭 Plant Capacity</span>
+            <select id="filter-plant-capacity" class="filter-select-input">
+              <option value="all">All Plant Sizes</option>
+              <option value="mega">Mega (&gt;1,000 MW)</option>
+              <option value="large">Large (500–1,000 MW)</option>
+              <option value="medium">Medium (100–500 MW)</option>
+              <option value="small">Small (&lt;100 MW)</option>
+            </select>
+          </div>
+
+          <div class="filter-select-wrap" style="justify-content: flex-end;">
+            <button id="btn-reset-filters" class="btn-reset-filters" title="Reset all filters and search">↺ Reset Filters</button>
+          </div>
+        </div>
+
+        <!-- Active Filter Indicator Badges -->
+        <div id="active-filter-tags-row" class="active-filter-tags-row" style="display: none;"></div>
+
+        <!-- Quick Tap Auto-fill Suggestions -->
+        <div class="quick-suggest-row">
+          <span class="suggest-label">Quick:</span>
+          <button class="suggest-pill" data-query="Cagayan">Cagayan (DUs)</button>
+          <button class="suggest-pill" data-query="Hermosa 500kV">Hermosa 500kV</button>
+          <button class="suggest-pill" data-query="Dinginin">Dinginin 1336MW</button>
+          <button class="suggest-pill" data-query="Meralco">Meralco</button>
+          <button class="suggest-pill" data-query="SPUG">Off-Grid SPUG</button>
+          <button class="suggest-pill" data-query="HVDC">450kV HVDC</button>
+        </div>
+      </div>
+
+      <!-- BIDIRECTIONAL SEARCH & CONTINGENCY RESULTS -->
+      <div class="card results-console-card">
+        <div class="card-mini-header" style="margin-bottom: 8px;">
+          <span id="results-panel-title" class="card-mini-title">🗓️ Scheduled Maintenance Brief (DOE GOMP)</span>
+          <span id="search-results-count" class="badge badge-amber">5 Approaching</span>
+        </div>
+
+        <div id="search-results-list" class="search-results-container">
+          <!-- Dynamically populated with cross-linked result cards -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- DOE GOMP MAINTENANCE CALENDAR & MANAGEMENT MODAL -->
+    <div id="gomp-modal" class="gomp-modal-overlay" style="display: none;">
+      <div class="gomp-modal-content">
+        <div class="gomp-modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">🛠️</span>
+            <div>
+              <h2 class="gomp-modal-title">DOE GOMP Maintenance Program</h2>
+              <div class="gomp-modal-sub">Official Coordinated Plant & Transmission Outages</div>
+            </div>
+          </div>
+          <button id="btn-close-gomp" class="btn-close-modal">✕</button>
+        </div>
+
+        <!-- Toolbar: Save JSON, Import JSON, Add Event -->
+        <div class="gomp-actions-row">
+          <button id="btn-save-gomp-json" class="btn-gomp-act btn-gomp-save">💾 Save GOMP JSON</button>
+          <label class="btn-gomp-act btn-gomp-load">
+            📂 Load JSON
+            <input type="file" id="gomp-file-input" accept=".json" style="display: none;" />
+          </label>
+          <button id="btn-add-gomp-event" class="btn-gomp-act btn-gomp-add">➕ Add Window</button>
+        </div>
+
+        <!-- Interactive GOMP Calendar -->
+        <div class="gomp-calendar-container">
+          <div class="calendar-nav-row">
+            <button id="btn-cal-prev" class="cal-nav-btn">◀ Prev</button>
+            <span id="calendar-month-label" class="cal-month-title">October 2026</span>
+            <button id="btn-cal-next" class="cal-nav-btn">Next ▶</button>
+          </div>
+          <div class="calendar-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+          <div id="calendar-days-grid" class="calendar-days-grid">
+            <!-- Dynamically populated calendar days with maintenance dots -->
+          </div>
+          <div class="cal-legend-bar">
+            <div class="cal-legend-item">
+              <span class="cal-dot cal-dot-plant"></span>
+              <span>Power Plant</span>
+            </div>
+            <div class="cal-legend-item">
+              <span class="cal-dot cal-dot-line"></span>
+              <span>Transmission Line</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approaching & Scheduled GOMP Events List -->
+        <div class="gomp-list-section">
+          <div class="gomp-list-header">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="gomp-list-title">Approaching Maintenance Windows</span>
+              <button id="btn-gomp-view-all" class="btn btn-icon-compact" style="display: none; font-size: 9.5px; padding: 2px 6px;">Show All</button>
+            </div>
+            <span id="gomp-schedule-count" class="badge badge-amber">15 Events</span>
+          </div>
+          <div id="gomp-schedule-items-list" class="gomp-items-container">
+            <!-- Dynamically rendered GOMP schedule cards -->
+          </div>
+        </div>
+
+        <!-- Official Data Source & Regulatory Citation Box -->
+        <div class="gomp-citation-box">
+          <div class="citation-title">🏛️ Official Data Source & Confirmed GOMP Documents:</div>
+          <div class="citation-body">
+            <div><strong>Active Operating Schedule:</strong> CY 2026 Luzon, Visayas & Mindanao Grid Operating Program — <em>Dynamic Revision 2 (DOE Confirmed)</em></div>
+            <div><strong>Confirmed Source Files in App:</strong>
+              <ul style="margin: 3px 0 3px 16px; padding: 0;">
+                <li>📄 <a href="2026%20GOMP%20Dynamic%20Revision%202_DOE%20Confirmed_watermark-2026-10-05-11-07-21.pdf" target="_blank"><strong>2026 GOMP Dynamic Revision 2 (DOE Confirmed)</strong></a> • <em>97 pages, published Oct 5, 2026</em> (Active Dynamic Baseline)</li>
+                <li>📄 <a href="2026%20GOMP%20Dynamic%20Revision%201_DOE%20Confirmed_watermark-2026-10-05-11-07-01.pdf" target="_blank"><strong>2026 GOMP Dynamic Revision 1 (DOE Confirmed)</strong></a> • <em>78 pages, published Oct 5, 2026</em> (Initial Masterfile)</li>
+              </ul>
+            </div>
+            <div><strong>Regulatory Mandates:</strong> DOE DC2020-02-0004 & DC2023-06-0018 • ERC Resolution No. 02, S. 2021 (Allowed Outage Days) • Philippine Grid Code Ch. 6</div>
+            <div><strong>Publishing Authorities:</strong> Department of Energy EPIMB (<a href="https://www.doe.gov.ph" target="_blank" rel="noopener">doe.gov.ph</a>) • NGCP System Operator (<a href="https://so.ngcp.ph" target="_blank" rel="noopener">so.ngcp.ph</a>) • NPC-SPUG Missionary Electrification Plan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK ADD GOMP WINDOW MODAL -->
+    <div id="gomp-add-modal" class="gomp-modal-overlay" style="display: none; z-index: 250;">
+      <div class="gomp-modal-content" style="max-height: 90vh;">
+        <div class="gomp-modal-header">
+          <h3 class="gomp-modal-title">➕ Add GOMP Maintenance Window</h3>
+          <button id="btn-close-add-gomp" class="btn-close-modal">✕</button>
+        </div>
+        <form id="form-add-gomp" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <div>
+            <label class="form-label">Asset Type</label>
+            <select id="add-gomp-type" class="form-input">
+              <option value="plant">🏭 Power Plant</option>
+              <option value="line">⚡ Transmission Line</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Asset</label>
+            <select id="add-gomp-asset" class="form-input"></select>
+          </div>
+          <div>
+            <label class="form-label">Unit / Bay</label>
+            <input type="text" id="add-gomp-unit" class="form-input" placeholder="e.g. Unit 1, Circuit 1" required />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+              <label class="form-label">Start Date</label>
+              <input type="date" id="add-gomp-start" class="form-input" required />
+            </div>
+            <div>
+              <label class="form-label">End Date</label>
+              <input type="date" id="add-gomp-end" class="form-input" required />
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Scope of Work</label>
+            <input type="text" id="add-gomp-work" class="form-input" placeholder="e.g. Annual Boiler Overhaul" required />
+          </div>
+          <div>
+            <label class="form-label">Unavailable Capacity (MW)</label>
+            <input type="number" id="add-gomp-mw" class="form-input" placeholder="e.g. 668" required />
+          </div>
+          <button type="submit" class="btn btn-search-go" style="padding: 10px; margin-top: 6px; font-size: 13px;">Save to GOMP Database</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="data.js"></script>
+  <script src="contingency-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
