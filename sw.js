@@ -1,5 +1,5 @@
 // PhilGrid Offline Service Worker
-const CACHE_NAME = "philgrid-v3.0";
+const CACHE_NAME = "philgrid-v3.1";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
