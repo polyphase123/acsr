@@ -28,11 +28,11 @@
           </div>
         </div>
         <div class="header-actions-group">
-          <button id="btn-gomp-toggle" class="btn btn-gomp-pill" title="View DOE GOMP Maintenance Calendar">
+          <button id="btn-gomp-toggle" type="button" class="btn btn-gomp-pill" title="View DOE GOMP Maintenance Calendar">
             🛠️ GOMP <span id="gomp-badge-count" class="gomp-count-pill">5</span>
           </button>
-          <button id="btn-theme-toggle" class="btn btn-icon-compact" title="Toggle Light / Dark Mode">🌓</button>
-          <button id="btn-reset-all" class="btn btn-reset-compact" title="Reset all breakers to normal">↺ RESET</button>
+          <button id="btn-theme-toggle" type="button" class="btn btn-icon-compact" title="Toggle Light / Dark Mode">🌓</button>
+          <button id="btn-reset-all" type="button" class="btn btn-reset-compact" title="Reset all breakers to normal">↺ RESET</button>
         </div>
       </div>
 
@@ -239,71 +239,73 @@
               <div class="gomp-modal-sub">Official Coordinated Plant & Transmission Outages</div>
             </div>
           </div>
-          <button id="btn-close-gomp" class="btn-close-modal">✕</button>
+          <button id="btn-close-gomp" type="button" class="btn-close-modal" title="Close Modal">✕</button>
         </div>
 
-        <!-- Toolbar: Save JSON, Import JSON, Add Event -->
-        <div class="gomp-actions-row">
-          <button id="btn-save-gomp-json" class="btn-gomp-act btn-gomp-save">💾 Save GOMP JSON</button>
-          <label class="btn-gomp-act btn-gomp-load">
-            📂 Load JSON
-            <input type="file" id="gomp-file-input" accept=".json" style="display: none;" />
-          </label>
-          <button id="btn-add-gomp-event" class="btn-gomp-act btn-gomp-add">➕ Add Window</button>
-        </div>
+        <div class="gomp-modal-body">
+          <!-- Toolbar: Save JSON, Import JSON, Add Event -->
+          <div class="gomp-actions-row">
+            <button id="btn-save-gomp-json" type="button" class="btn-gomp-act btn-gomp-save">💾 Save JSON</button>
+            <label class="btn-gomp-act btn-gomp-load">
+              📂 Load JSON
+              <input type="file" id="gomp-file-input" accept=".json" style="display: none;" />
+            </label>
+            <button id="btn-add-gomp-event" type="button" class="btn-gomp-act btn-gomp-add">➕ Add Event</button>
+          </div>
 
-        <!-- Interactive GOMP Calendar -->
-        <div class="gomp-calendar-container">
-          <div class="calendar-nav-row">
-            <button id="btn-cal-prev" class="cal-nav-btn">◀ Prev</button>
-            <span id="calendar-month-label" class="cal-month-title">October 2026</span>
-            <button id="btn-cal-next" class="cal-nav-btn">Next ▶</button>
-          </div>
-          <div class="calendar-weekdays">
-            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-          </div>
-          <div id="calendar-days-grid" class="calendar-days-grid">
-            <!-- Dynamically populated calendar days with maintenance dots -->
-          </div>
-          <div class="cal-legend-bar">
-            <div class="cal-legend-item">
-              <span class="cal-dot cal-dot-plant"></span>
-              <span>Power Plant</span>
+          <!-- Interactive GOMP Calendar -->
+          <div class="gomp-calendar-box">
+            <div class="cal-header-row">
+              <button id="btn-cal-prev" type="button" class="cal-nav-btn">◀ Prev</button>
+              <span id="calendar-month-label" class="calendar-month-title">October 2026</span>
+              <button id="btn-cal-next" type="button" class="cal-nav-btn">Next ▶</button>
             </div>
-            <div class="cal-legend-item">
-              <span class="cal-dot cal-dot-line"></span>
-              <span>Transmission Line</span>
+            <div class="calendar-weekdays">
+              <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+            </div>
+            <div id="calendar-days-grid" class="cal-grid">
+              <!-- Dynamically populated calendar days with maintenance dots -->
+            </div>
+            <div class="cal-legend-bar">
+              <div class="cal-legend-item">
+                <span class="cal-dot cal-dot-plant"></span>
+                <span>Power Plant</span>
+              </div>
+              <div class="cal-legend-item">
+                <span class="cal-dot cal-dot-line"></span>
+                <span>Transmission Line</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Approaching & Scheduled GOMP Events List -->
-        <div class="gomp-list-section">
-          <div class="gomp-list-header">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span id="gomp-list-title">Approaching Maintenance Windows</span>
-              <button id="btn-gomp-view-all" class="btn btn-icon-compact" style="display: none; font-size: 9.5px; padding: 2px 6px;">Show All</button>
+          <!-- Approaching & Scheduled GOMP Events List -->
+          <div class="gomp-list-section">
+            <div class="gomp-list-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span id="gomp-list-title" style="font-size: var(--text-xs); font-weight: 800; color: var(--text-primary);">Approaching Maintenance Windows</span>
+                <button id="btn-gomp-view-all" class="btn btn-icon-compact" style="display: none; font-size: 9.5px; padding: 2px 6px;">Show All</button>
+              </div>
+              <span id="gomp-schedule-count" class="badge badge-amber">27 Events</span>
             </div>
-            <span id="gomp-schedule-count" class="badge badge-amber">15 Events</span>
+            <div id="gomp-schedule-items-list" class="gomp-schedule-list">
+              <!-- Dynamically rendered GOMP schedule cards -->
+            </div>
           </div>
-          <div id="gomp-schedule-items-list" class="gomp-items-container">
-            <!-- Dynamically rendered GOMP schedule cards -->
-          </div>
-        </div>
 
-        <!-- Official Data Source & Regulatory Citation Box -->
-        <div class="gomp-citation-box">
-          <div class="citation-title">🏛️ Official Data Source & Confirmed GOMP Documents:</div>
-          <div class="citation-body">
-            <div><strong>Active Operating Schedule:</strong> CY 2026 Luzon, Visayas & Mindanao Grid Operating Program — <em>Dynamic Revision 2 (DOE Confirmed)</em></div>
-            <div><strong>Confirmed Source Files in App:</strong>
-              <ul style="margin: 3px 0 3px 16px; padding: 0;">
-                <li>📄 <a href="2026%20GOMP%20Dynamic%20Revision%202_DOE%20Confirmed_watermark-2026-10-05-11-07-21.pdf" target="_blank"><strong>2026 GOMP Dynamic Revision 2 (DOE Confirmed)</strong></a> • <em>97 pages, published Oct 5, 2026</em> (Active Dynamic Baseline)</li>
-                <li>📄 <a href="2026%20GOMP%20Dynamic%20Revision%201_DOE%20Confirmed_watermark-2026-10-05-11-07-01.pdf" target="_blank"><strong>2026 GOMP Dynamic Revision 1 (DOE Confirmed)</strong></a> • <em>78 pages, published Oct 5, 2026</em> (Initial Masterfile)</li>
-              </ul>
+          <!-- Official Data Source & Regulatory Citation Box -->
+          <div class="gomp-citation-box">
+            <div class="citation-title">🏛️ Official Data Source & Confirmed GOMP Documents:</div>
+            <div class="citation-body">
+              <div><strong>Active Operating Schedule:</strong> CY 2026 Luzon, Visayas & Mindanao Grid Operating Program — <em>Dynamic Revision 2 (DOE Confirmed)</em></div>
+              <div><strong>Confirmed Source Files in App:</strong>
+                <ul style="margin: 3px 0 3px 16px; padding: 0;">
+                  <li>📄 <a href="2026%20GOMP%20Dynamic%20Revision%202_DOE%20Confirmed_watermark-2026-10-05-11-07-21.pdf" target="_blank"><strong>2026 GOMP Dynamic Revision 2 (DOE Confirmed)</strong></a> • <em>97 pages, published Oct 5, 2026</em> (Active Dynamic Baseline)</li>
+                  <li>📄 <a href="2026%20GOMP%20Dynamic%20Revision%201_DOE%20Confirmed_watermark-2026-10-05-11-07-01.pdf" target="_blank"><strong>2026 GOMP Dynamic Revision 1 (DOE Confirmed)</strong></a> • <em>78 pages, published Oct 5, 2026</em> (Initial Masterfile)</li>
+                </ul>
+              </div>
+              <div><strong>Regulatory Mandates:</strong> DOE DC2020-02-0004 & DC2023-06-0018 • ERC Resolution No. 02, S. 2021 (Allowed Outage Days) • Philippine Grid Code Ch. 6</div>
+              <div><strong>Publishing Authorities:</strong> Department of Energy EPIMB (<a href="https://www.doe.gov.ph" target="_blank" rel="noopener">doe.gov.ph</a>) • NGCP System Operator (<a href="https://so.ngcp.ph" target="_blank" rel="noopener">so.ngcp.ph</a>) • NPC-SPUG Missionary Electrification Plan</div>
             </div>
-            <div><strong>Regulatory Mandates:</strong> DOE DC2020-02-0004 & DC2023-06-0018 • ERC Resolution No. 02, S. 2021 (Allowed Outage Days) • Philippine Grid Code Ch. 6</div>
-            <div><strong>Publishing Authorities:</strong> Department of Energy EPIMB (<a href="https://www.doe.gov.ph" target="_blank" rel="noopener">doe.gov.ph</a>) • NGCP System Operator (<a href="https://so.ngcp.ph" target="_blank" rel="noopener">so.ngcp.ph</a>) • NPC-SPUG Missionary Electrification Plan</div>
           </div>
         </div>
       </div>
@@ -314,9 +316,10 @@
       <div class="gomp-modal-content" style="max-height: 90vh;">
         <div class="gomp-modal-header">
           <h3 class="gomp-modal-title">➕ Add GOMP Maintenance Window</h3>
-          <button id="btn-close-add-gomp" class="btn-close-modal">✕</button>
+          <button id="btn-close-add-gomp" class="btn-close-modal" title="Close Modal">✕</button>
         </div>
-        <form id="form-add-gomp" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+        <div class="gomp-modal-body">
+          <form id="form-add-gomp" style="display: flex; flex-direction: column; gap: 8px;">
           <div>
             <label class="form-label">Asset Type</label>
             <select id="add-gomp-type" class="form-input">
@@ -352,6 +355,7 @@
           </div>
           <button type="submit" class="btn btn-search-go" style="padding: 10px; margin-top: 6px; font-size: 13px;">Save to GOMP Database</button>
         </form>
+        </div>
       </div>
     </div>
 
